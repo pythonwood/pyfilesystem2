@@ -27,7 +27,7 @@ REQUIREMENTS = ["appdirs~=1.4.3", "pytz", "setuptools", "six~=1.10", "click"]
 # CONSOLE_SCRIPTS = ['fs2 = fs.commands.fs2:fs2'] # failed
 CONSOLE_SCRIPTS_STR = '''
         [console_scripts]
-        fs2=fs.commands.fs2:fs2
+        fs2=fs.commands:fs2
     '''
 
 setup(
