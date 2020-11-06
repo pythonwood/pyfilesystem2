@@ -17,6 +17,12 @@ def _rm(fs, path, vcount=0):
 @click.option('--recursive', '-r', is_flag=True, help='remove directories and their contents recursively')
 @click.pass_context
 def rm(ctx, paths, force, verbose, interactive, recursive):
+    """delete file and dirs.
+    example:
+        rm -f file1.txt pic.img
+        rm -rf dir1/ dir2/
+        rm -ri dir1/ dir2/
+    """
     if not force:
         click.confirm('delete is dangerous. Continue?', abort=True, default=True)
     fs = ctx.obj['fs']
@@ -28,7 +34,6 @@ def rm(ctx, paths, force, verbose, interactive, recursive):
                 click.confirm('%s is a dir, need --recursive/-r option. Continue?' % path, abort=True, default=True)
             tops = []
             for top, subs, files in fs.walk.walk(path):
-                print(top, subs, files)
                 for finfo in files:
                     target = posixpath.join(top, finfo.name)
                     if interactive:
