@@ -2,22 +2,6 @@ from fs import open_fs, errors
 import shutil
 import click
 
-from functools import wraps
-from time import time
-
-def timing(f):
-    @wraps(f)
-    def wrap(*args, **kw):
-        ts = time()
-        result = f(*args, **kw)
-        te = time()
-        print('func:%r args:[%r, %r] took: %2.3f sec' % \
-          (f.__name__, args, kw, te-ts))
-        return result
-    return wrap
-
-FS2_NOEXIST, FS2_ISFILE, FS2_ISDIR = 0, 1, 2
-
 def _listopener():
     from fs.opener  import registry
     openers = set(registry.get_opener(i).__class__ for i in  registry.protocols)
