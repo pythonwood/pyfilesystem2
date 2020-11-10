@@ -29,14 +29,28 @@ def rm(ctx, paths, force, verbose, interactive, recursive):
     if not force:
         click.confirm('delete is dangerous. Continue?', abort=True, default=True)
     fs = ctx.obj['fs']
+
+    def fs_read_error(path, e):
+        try:
+            dirlist = fs.listdir(path)
+            # for a/noexit1/noexit2/a.txt: must fs.makedirs('a/noexit1') before
+            # fs.listdir('a/noexit1/noexit2'). otherwise ResourceNotFound 404.
+            fs.makedirs(path)
+            print(time.strftime('%F_%T'), 'WARN: %s should be dir because it has files, fixed.' % e)
+        except errors.FSError:
+            return False
+        else:
+            ctx.invoke(rm, paths=[posixpath.join(path, d) for d in dirlist], force=force,
+                       verbose=verbose, interactive=interactive, recursive=recursive)
+            return True # to ignore
+
     for path in paths:
         try:
-            _rm(fs, path, verbose)
-        except errors.FileExpected:
+            dirlist = fs.listdir(path)
             if not recursive:
                 click.confirm('%s is a dir, need --recursive/-r option. Continue?' % path, abort=True, default=True)
             tops = []
-            for top, subs, files in fs.walk.walk(path):
+            for top, subs, files in fs.walk.walk(path, on_error=fs_read_error):
                 for finfo in files:
                     target = posixpath.join(top, finfo.name)
                     if interactive:
@@ -47,6 +61,8 @@ def rm(ctx, paths, force, verbose, interactive, recursive):
                 fs.removedir(top)
                 if verbose >= 1:
                     print(time.strftime('%F_%T'), 'rmdir %s' % top)
+        except errors.DirectoryExpected:
+            _rm(fs, path, verbose)
         except errors.ResourceNotFound:
             if not force:
                 click.confirm('%s is not exist. Continue?' % path, abort=True, default=True)
