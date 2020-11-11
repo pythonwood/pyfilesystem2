@@ -15,9 +15,12 @@ def cat(ctx, paths, force):
         cat a.txt
         cat a.ini a.txt
     '''
-    fss = ctx.obj['fss']
-    for fs in fss:
-      for path in paths:
+    fs = ctx.obj['fs']
+    for u,f in fs.items():
+        fs_cat(f, paths, force)
+
+def fs_cat(fs, paths, force):
+    for path in paths:
         path = relpath(normpath(path))
         try:
             result = fs.readbytes(path)
